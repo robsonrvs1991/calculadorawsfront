@@ -1,123 +1,339 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pix Parcelado vs Investimento CRA</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      margin: 0;
-      padding: 2rem;
-      color: #333;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    h1, h2 {
-      color: #4a148c;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1rem 0;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 0.75rem;
-      text-align: left;
-    }
-    th {
-      background-color: #e0e0e0;
-    }
-    footer {
-      margin-top: 3rem;
-      text-align: center;
-      font-style: italic;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calculadora Renda Fixa - Protótipo</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 900px;
+    margin: auto;
+    padding: 2rem;
+    background: #f4f4f9;
+    color: #333;
+  }
+  h1, h2 {
+    color: #4a148c;
+  }
+  label {
+    font-weight: bold;
+    margin-top: 1rem;
+    display: block;
+  }
+  input, select {
+    width: 100%;
+    max-width: 200px;
+    padding: 0.4rem;
+    margin-top: 0.3rem;
+    margin-bottom: 1rem;
+  }
+  button {
+    background-color: #4a148c;
+    color: white;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button:hover {
+    background-color: #6a1b9a;
+  }
+  #results {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 8px #ddd;
+  }
+  canvas {
+    max-width: 100%;
+    margin-top: 1rem;
+  }
+  .indices {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .indice {
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    box-shadow: 0 0 4px #ccc;
+    min-width: 120px;
+    text-align: center;
+  }
+  .indice label {
+    font-weight: normal;
+    color: #555;
+    display: block;
+  }
+</style>
 </head>
 <body>
-  <h1>Pix Parcelado vs Investimento em CRA</h1>
-  <p>Vamos analisar uma situação real para entender se vale a pena parcelar um Pix no crédito e aplicar o valor recebido em um investimento como um CRA (Certificado de Recebíveis do Agronegócio).</p>
 
-  <h2>📅 Situação Real:</h2>
+<h1>Calculadora de Renda Fixa</h1>
+<p>Simule seus investimentos em Tesouro Direto, CDBs, fundos DI, LCI/LCA e veja o comparativo para 1 ano e 5 anos.</p>
+
+<form id="simuladorForm">
+
+  <label for="investimentoInicial">Investimento Inicial (R$)</label>
+  <input type="number" id="investimentoInicial" min="0" step="0.01" value="0" />
+
+  <label for="aporteMensal">Aportes Mensais (R$)</label>
+  <input type="number" id="aporteMensal" min="0" step="0.01" value="0" />
+
+  <label for="periodoAplicacao">Período da Aplicação</label>
+  <input type="number" id="periodoAplicacao" min="1" max="600" step="1" value="12" />
+  <select id="unidadePeriodo">
+    <option value="meses" selected>Meses</option>
+    <option value="anos">Anos</option>
+  </select>
+
   <h2>Índices Oficiais Atualizados</h2>
-<label for="selic">Selic (% a.a.): </label>
-<input type="number" id="selic" step="0.01" value="0" /><br/>
+  <div class="indices">
+    <div class="indice">
+      <label>Selic (% a.a.)</label>
+      <div id="selic">--</div>
+    </div>
+    <div class="indice">
+      <label>CDI (% a.a.)</label>
+      <div id="cdi">--</div>
+    </div>
+    <div class="indice">
+      <label>IPCA (% a.a.)</label>
+      <div id="ipca">--</div>
+    </div>
+    <div class="indice">
+      <label>TR (a.m.)</label>
+      <div id="tr">--</div>
+    </div>
+  </div>
 
-<label for="cdi">CDI (% a.a.): </label>
-<input type="number" id="cdi" step="0.01" value="0" /><br/>
+  <button type="button" id="btnSimular">Simular</button>
+</form>
 
-<label for="ipca">IPCA (% a.a.): </label>
-<input type="number" id="ipca" step="0.01" value="0" /><br/>
+<div id="results" style="display:none;">
+  <h2>Resultados da Simulação</h2>
+  <p><strong>Comparativo para 1 ano e 5 anos</strong></p>
+  <div id="resumo"></div>
+  <canvas id="graficoEvolucao"></canvas>
+</div>
 
-<label for="tr">TR (a.m.): </label>
-<input type="number" id="tr" step="0.0001" value="0" /><br/>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <ul>
-    <li>Valor do Pix: <strong>R$ 125,00</strong></li>
-    <li>Parcelado em: <strong>3x de R$ 44,74</strong></li>
-    <li>Total pago: <strong>R$ 134,22</strong></li>
-    <li>Investimento: <strong>CRA com rendimento de 10% ao ano</strong></li>
-    <li>Duração do investimento: <strong>3 meses</strong></li>
-  </ul>
-
-  <h2>💸 Comparativo Financeiro</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th>Valor (R$)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Juros do parcelamento</td>
-        <td>-9,22</td>
-      </tr>
-      <tr>
-        <td>Ganho líquido com o CRA (3 meses)</td>
-        <td>+2,57</td>
-      </tr>
-      <tr>
-        <td><strong>Resultado final</strong></td>
-        <td><strong>-6,65</strong></td>
-      </tr>
-    </tbody>
-  </table>
-
-  <h2>✅ Conclusão</h2>
-  <p>Mesmo aplicando o valor recebido em um investimento de 10% ao ano, o custo dos juros do parcelamento (R$ 9,22) supera o ganho (R$ 2,57). Portanto, essa estratégia resulta em prejuízo.</p>
-
-  <footer>
-    Criado por <strong>Robson M. Santos</strong> — 2025
-  </footer>
-    <!-- Seu conteúdo HTML -->
-
-  <script>
+<script>
+  // Função para buscar os índices atualizados da API backend
   async function atualizarIndices() {
     try {
-      const resposta = await fetch("https://calculadora-rvs.up.railway.app/indices");
-      if (!resposta.ok) throw new Error("Erro ao buscar índices");
-      const dados = await resposta.json();
+      const resp = await fetch('https://calculadora-rvs.up.railway.app/indices');
+      if (!resp.ok) throw new Error('Erro ao buscar índices');
+      const dados = await resp.json();
 
-      if (dados.selic !== undefined) document.getElementById("selic").value = dados.selic.toFixed(2);
-      if (dados.cdi !== undefined) document.getElementById("cdi").value = (dados.cdi * 100).toFixed(2);
-      if (dados.ipca !== undefined) document.getElementById("ipca").value = (dados.ipca * 100).toFixed(2);
-      if (dados.tr !== undefined) document.getElementById("tr").value = dados.tr.toFixed(4);
+      document.getElementById('selic').textContent = dados.selic.toFixed(2);
+      document.getElementById('cdi').textContent = (dados.cdi * 100).toFixed(2);
+      document.getElementById('ipca').textContent = (dados.ipca * 100).toFixed(2);
+      document.getElementById('tr').textContent = dados.tr.toFixed(4);
 
-      if (typeof calcular === "function") calcular();
-
-    } catch (err) {
-      console.error("Erro ao atualizar índices:", err);
+      // Guardar os índices para cálculo
+      window.indices = dados;
+    } catch(e) {
+      console.error(e);
+      alert('Não foi possível atualizar os índices.');
     }
   }
 
-  window.addEventListener("load", atualizarIndices);
-  </script>
+  // Cálculo juros compostos com aporte mensal
+  function calculaValorFinal(P, PMT, i, n) {
+    // P = principal (inicial)
+    // PMT = aporte mensal
+    // i = taxa mensal decimal
+    // n = número total de meses
+    if (i === 0) return P + PMT * n;
+    return P * Math.pow(1 + i, n) + PMT * ((Math.pow(1 + i, n) - 1) / i);
+  }
+
+  // Gera os valores mês a mês para o gráfico
+  function geraEvolucao(P, PMT, i, n) {
+    let valores = [];
+    for (let mes = 0; mes <= n; mes++) {
+      valores.push(calculaValorFinal(P, PMT, i, mes));
+    }
+    return valores;
+  }
+
+  // Função principal para simular e exibir resultados
+  function simular() {
+    const investimentoInicial = parseFloat(document.getElementById('investimentoInicial').value) || 0;
+    const aporteMensal = parseFloat(document.getElementById('aporteMensal').value) || 0;
+    let periodo = parseInt(document.getElementById('periodoAplicacao').value) || 12;
+    const unidade = document.getElementById('unidadePeriodo').value;
+
+    if (unidade === 'anos') {
+      periodo *= 12;
+    }
+
+    if (!window.indices) {
+      alert('Aguarde a atualização dos índices.');
+      return;
+    }
+
+    const selicAnual = window.indices.selic / 100;
+    const cdiAnual = window.indices.cdi;
+    const ipcaAnual = window.indices.ipca;
+    const trMensal = window.indices.tr;
+
+    // Conversão para taxas mensais (aproximadas)
+    const selicMensal = Math.pow(1 + selicAnual, 1/12) - 1;
+    const cdiMensal = Math.pow(1 + cdiAnual, 1/12) - 1;
+    const ipcaMensal = Math.pow(1 + ipcaAnual, 1/12) - 1;
+
+    // Simulação dos investimentos:
+    // 1) CDB 100% CDI (rendimento mensal baseado no CDI)
+    // 2) Fundo DI (98.17% CDI)
+    // 3) Tesouro Prefixado (14% a.a.)
+    // 4) Tesouro IPCA+ (6.5% a.a. + inflação IPCA)
+    // 5) LCI/LCA (85% CDI)
+    // 6) Poupança (0.6748% a.m.)
+
+    const cdbFinal = calculaValorFinal(investimentoInicial, aporteMensal, cdiMensal, periodo);
+    const fundoDIFinal = calculaValorFinal(investimentoInicial, aporteMensal, cdiMensal * 0.9817, periodo);
+    const tesouroPrefixadoFinal = calculaValorFinal(investimentoInicial, aporteMensal, Math.pow(1 + 0.14, 1/12) -1, periodo);
+    const tesouroIPCAFinal = calculaValorFinal(investimentoInicial, aporteMensal, Math.pow(1 + 0.065 + ipcaAnual, 1/12) -1, periodo);
+    const lciFinal = calculaValorFinal(investimentoInicial, aporteMensal, cdiMensal * 0.85, periodo);
+    const poupancaFinal = calculaValorFinal(investimentoInicial, aporteMensal, 0.006748, periodo); // fixo
+
+    // Valores para 1 ano (12 meses) e 5 anos (60 meses)
+    const resultados = {
+      '1 ano': {
+        cdb: calculaValorFinal(investimentoInicial, aporteMensal, cdiMensal, 12),
+        fundoDI: calculaValorFinal(investimentoInicial, aporteMensal, cdiMensal * 0.9817, 12),
+        tesouroPrefixado: calculaValorFinal(investimentoInicial, aporteMensal, Math.pow(1 + 0.14, 1/12) -1, 12),
+        tesouroIPCA: calculaValorFinal(investimentoInicial, aporteMensal, Math.pow(1 + 0.065 + ipcaAnual, 1/12) -1, 12),
+        lci: calculaValorFinal(investimentoInicial, aporteMensal, cdiMensal * 0.85, 12),
+        poupanca: calculaValorFinal(investimentoInicial, aporteMensal, 0.006748, 12)
+      },
+      '5 anos': {
+        cdb: calculaValorFinal(investimentoInicial, aporteMensal, cdiMensal, 60),
+        fundoDI: calculaValorFinal(investimentoInicial, aporteMensal, cdiMensal * 0.9817, 60),
+        tesouroPrefixado: calculaValorFinal(investimentoInicial, aporteMensal, Math.pow(1 + 0.14, 1/12) -1, 60),
+        tesouroIPCA: calculaValorFinal(investimentoInicial, aporteMensal, Math.pow(1 + 0.065 + ipcaAnual, 1/12) -1, 60),
+        lci: calculaValorFinal(investimentoInicial, aporteMensal, cdiMensal * 0.85, 60),
+        poupanca: calculaValorFinal(investimentoInicial, aporteMensal, 0.006748, 60)
+      }
+    };
+
+    // Mostrar resumo simples na tela
+    const resumoDiv = document.getElementById('resumo');
+    resumoDiv.innerHTML = '';
+
+    for (const periodoNome in resultados) {
+      resumoDiv.innerHTML += `<h3>${periodoNome}</h3>`;
+      resumoDiv.innerHTML += `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;width:100%;margin-bottom:20px;">
+        <thead>
+          <tr style="background:#4a148c;color:#fff;">
+            <th>Investimento</th><th>Valor Final (R$)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>CDB 100% CDI</td><td>${resultados[periodoNome].cdb.toFixed(2)}</td></tr>
+          <tr><td>Fundo DI (98,17% CDI)</td><td>${resultados[periodoNome].fundoDI.toFixed(2)}</td></tr>
+          <tr><td>Tesouro Prefixado (14% a.a.)</td><td>${resultados[periodoNome].tesouroPrefixado.toFixed(2)}</td></tr>
+          <tr><td>Tesouro IPCA+ (6,5% a.a. + IPCA)</td><td>${resultados[periodoNome].tesouroIPCA.toFixed(2)}</td></tr>
+          <tr><td>LCI/LCA (85% CDI)</td><td>${resultados[periodoNome].lci.toFixed(2)}</td></tr>
+          <tr><td>Poupança (0,6748% a.m.)</td><td>${resultados[periodoNome].poupanca.toFixed(2)}</td></tr>
+        </tbody>
+      </table>`;
+    }
+
+    // Gráfico evolução para o período completo escolhido
+    const ctx = document.getElementById('graficoEvolucao').getContext('2d');
+    if (window.grafico) window.grafico.destroy();
+
+    const labels = [];
+    for(let i=0; i<=periodo; i++) {
+      labels.push(i + 'm');
+    }
+
+    window.grafico = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'CDB 100% CDI',
+            data: geraEvolucao(investimentoInicial, aporteMensal, cdiMensal, periodo),
+            borderColor: '#4a148c',
+            fill: false,
+          },
+          {
+            label: 'Fundo DI (98,17% CDI)',
+            data: geraEvolucao(investimentoInicial, aporteMensal, cdiMensal * 0.9817, periodo),
+            borderColor: '#7b1fa2',
+            fill: false,
+          },
+          {
+            label: 'Tesouro Prefixado (14% a.a.)',
+            data: geraEvolucao(investimentoInicial, aporteMensal, Math.pow(1 + 0.14, 1/12) -1, periodo),
+            borderColor: '#ab47bc',
+            fill: false,
+          },
+          {
+            label: 'Tesouro IPCA+ (6,5% a.a. + IPCA)',
+            data: geraEvolucao(investimentoInicial, aporteMensal, Math.pow(1 + 0.065 + ipcaAnual, 1/12) -1, periodo),
+            borderColor: '#ce93d8',
+            fill: false,
+          },
+          {
+            label: 'LCI/LCA (85% CDI)',
+            data: geraEvolucao(investimentoInicial, aporteMensal, cdiMensal * 0.85, periodo),
+            borderColor: '#ba68c8',
+            fill: false,
+          },
+          {
+            label: 'Poupança (0,6748% a.m.)',
+            data: geraEvolucao(investimentoInicial, aporteMensal, 0.006748, periodo),
+            borderColor: '#9c27b0',
+            fill: false,
+          },
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: 'Evolução do investimento' }
+        },
+        scales: {
+          y: { beginAtZero: true },
+          x: { title: { display: true, text: 'Meses' } }
+        }
+      }
+    });
+  }
+
+  // Funções auxiliares usadas no gráfico e cálculo
+  function calculaValorFinal(P, PMT, i, n) {
+    if (i === 0) return P + PMT * n;
+    return P * Math.pow(1 + i, n) + PMT * ((Math.pow(1 + i, n) - 1) / i);
+  }
+  function geraEvolucao(P, PMT, i, n) {
+    const valores = [];
+    for (let mes = 0; mes <= n; mes++) {
+      valores.push(calculaValorFinal(P, PMT, i, mes));
+    }
+    return valores;
+  }
+
+  // Eventos
+  document.getElementById('btnSimular').addEventListener('click', simular);
+
+  // Atualiza índices ao carregar página
+  atualizarIndices();
+
+</script>
 
 </body>
 </html>
-
