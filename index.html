@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pix Parcelado vs Investimento CRA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 2rem;
+      color: #333;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1, h2 {
+      color: #4a148c;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    th {
+      background-color: #e0e0e0;
+    }
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pix Parcelado vs Investimento em CRA</h1>
+  <p>Vamos analisar uma situação real para entender se vale a pena parcelar um Pix no crédito e aplicar o valor recebido em um investimento como um CRA (Certificado de Recebíveis do Agronegócio).</p>
+
+  <h2>📅 Situação Real:</h2>
+  <h2>Índices Oficiais Atualizados</h2>
+<label for="selic">Selic (% a.a.): </label>
+<input type="number" id="selic" step="0.01" value="0" /><br/>
+
+<label for="cdi">CDI (% a.a.): </label>
+<input type="number" id="cdi" step="0.01" value="0" /><br/>
+
+<label for="ipca">IPCA (% a.a.): </label>
+<input type="number" id="ipca" step="0.01" value="0" /><br/>
+
+<label for="tr">TR (a.m.): </label>
+<input type="number" id="tr" step="0.0001" value="0" /><br/>
+
+  <ul>
+    <li>Valor do Pix: <strong>R$ 125,00</strong></li>
+    <li>Parcelado em: <strong>3x de R$ 44,74</strong></li>
+    <li>Total pago: <strong>R$ 134,22</strong></li>
+    <li>Investimento: <strong>CRA com rendimento de 10% ao ano</strong></li>
+    <li>Duração do investimento: <strong>3 meses</strong></li>
+  </ul>
+
+  <h2>💸 Comparativo Financeiro</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Valor (R$)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Juros do parcelamento</td>
+        <td>-9,22</td>
+      </tr>
+      <tr>
+        <td>Ganho líquido com o CRA (3 meses)</td>
+        <td>+2,57</td>
+      </tr>
+      <tr>
+        <td><strong>Resultado final</strong></td>
+        <td><strong>-6,65</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>✅ Conclusão</h2>
+  <p>Mesmo aplicando o valor recebido em um investimento de 10% ao ano, o custo dos juros do parcelamento (R$ 9,22) supera o ganho (R$ 2,57). Portanto, essa estratégia resulta em prejuízo.</p>
+
+  <footer>
+    Criado por <strong>Robson M. Santos</strong> — 2025
+  </footer>
+    <!-- Seu conteúdo HTML -->
+
+  <script>
+  async function atualizarIndices() {
+    try {
+      const resposta = await fetch("https://calculadora-rvs.up.railway.app/indices");
+      if (!resposta.ok) throw new Error("Erro ao buscar índices");
+      const dados = await resposta.json();
+
+      if (dados.selic !== undefined) document.getElementById("selic").value = dados.selic.toFixed(2);
+      if (dados.cdi !== undefined) document.getElementById("cdi").value = (dados.cdi * 100).toFixed(2);
+      if (dados.ipca !== undefined) document.getElementById("ipca").value = (dados.ipca * 100).toFixed(2);
+      if (dados.tr !== undefined) document.getElementById("tr").value = dados.tr.toFixed(4);
+
+      if (typeof calcular === "function") calcular();
+
+    } catch (err) {
+      console.error("Erro ao atualizar índices:", err);
+    }
+  }
+
+  window.addEventListener("load", atualizarIndices);
+  </script>
+
+</body>
+</html>
+
