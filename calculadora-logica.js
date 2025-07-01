@@ -179,3 +179,54 @@ function exportarXLSX() {
   XLSX.writeFile(wb, 'simulacao-investimento.xlsx');
 }
 
+document.getElementById("btnCalcular").addEventListener("click", async () => {
+  const investimentoInicial = parseFloat(document.getElementById("investimentoInicial").value) || 0;
+  const aporteMensal = parseFloat(document.getElementById("aportesMensais").value) || 0;
+  const periodo = parseInt(document.getElementById("periodo").value) || 0;
+  const unidade = document.getElementById("periodoUnidade").value;
+
+  const meses = unidade === "anos" ? periodo * 12 : periodo;
+
+  const cdi = parseFloat(document.getElementById("cdi").value) || 0;
+  const ipca = parseFloat(document.getElementById("ipca").value) || 0;
+  const poupanca = parseFloat(document.getElementById("rentPoupanca").value) || 0;
+
+  const payload = {
+    investimento_inicial: investimentoInicial,
+    aporte_mensal: aporteMensal,
+    meses: meses,
+    cdi: cdi,
+    ipca: ipca,
+    poupanca: poupanca
+  };
+
+  try {
+    const res = await fetch("https://calculadora-rvs-production.up.railway.app/calcular", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error("Erro no cálculo");
+
+    const data = await res.json();
+
+    document.getElementById("resultado").innerHTML = `
+      <div>📈 <strong>Total estimado CDI:</strong> R$ ${data.total_cdi.toFixed(2)}</div>
+      <div>📊 <strong>Total estimado IPCA:</strong> R$ ${data.total_ipca.toFixed(2)}</div>
+      <div>🏦 <strong>Total estimado Poupança:</strong> R$ ${data.total_poupanca.toFixed(2)}</div>
+    `;
+
+    // Atualização futura do gráfico pode ser adicionada aqui
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao calcular. Tente novamente.");
+  }
+});
+
+atualizarGrafico({
+  CDI: Array.from({ length: meses }, (_, i) => data.total_cdi * (i + 1) / meses),
+  IPCA: Array.from({ length: meses }, (_, i) => data.total_ipca * (i + 1) / meses),
+  Poupanca: Array.from({ length: meses }, (_, i) => data.total_poupanca * (i + 1) / meses)
+}, Array.from({ length: meses }, (_, i) => `${i + 1}º mês`));
+
