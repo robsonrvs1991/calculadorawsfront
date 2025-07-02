@@ -7,7 +7,7 @@
 <style>
   body {
     font-family: Arial, sans-serif;
-    max-width: 900px;
+    max-width: 1200px;
     margin: 2rem auto;
     padding: 1.5rem;
     background: #f9f9f9;
@@ -17,6 +17,22 @@
     color: #4a148c;
     margin-bottom: 1rem;
     text-align: center;
+  }
+  .container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  @media (min-width: 992px) {
+    .container {
+      flex-direction: row;
+    }
+  }
+  .formulario {
+    flex: 1;
+  }
+  .grafico {
+    flex: 1;
   }
   .grid {
     display: grid;
@@ -78,95 +94,64 @@
     background: white;
     border-radius: 8px;
     box-shadow: 0 0 10px #ccc;
+    width: 100%;
   }
 </style>
 </head>
 <body>
   <h1>Calculadora de Renda Fixa com Gráficos</h1>
 
-  <div class="grid">
-    <div>
-      <label for="investimentoInicial">Investimento inicial (R$)</label>
-      <input type="number" id="investimentoInicial" min="0" step="0.01" value="0" />
-    </div>
-    <div>
-      <label for="aportesMensais">Aportes mensais (R$)</label>
-      <input type="number" id="aportesMensais" min="0" step="0.01" value="0" />
-    </div>
-    <div>
-      <label for="periodo">Período da aplicação</label>
-      <div class="period-controls">
-        <button type="button" onclick="decrementPeriodo()">−</button>
-        <input type="number" id="periodo" min="0" step="1" value="12" style="width: 60px; text-align:center;" />
-        <button type="button" onclick="incrementPeriodo()">+</button>
-        <select id="periodoUnidade" onchange="calcular()">
-          <option value="meses" selected>meses</option>
-          <option value="anos">anos</option>
-        </select>
+  <div class="container">
+    <div class="formulario">
+      <div class="grid">
+        <div>
+          <label for="investimentoInicial">Investimento inicial (R$)</label>
+          <input type="number" id="investimentoInicial" min="0" step="0.01" value="0" />
+        </div>
+        <div>
+          <label for="aportesMensais">Aportes mensais (R$)</label>
+          <input type="number" id="aportesMensais" min="0" step="0.01" value="0" />
+        </div>
+        <div>
+          <label for="periodo">Período da aplicação</label>
+          <div class="period-controls">
+            <button type="button" onclick="decrementPeriodo()">−</button>
+            <input type="number" id="periodo" min="0" step="1" value="12" style="width: 60px; text-align:center;" />
+            <button type="button" onclick="incrementPeriodo()">+</button>
+            <select id="periodoUnidade" onchange="calcular()">
+              <option value="meses" selected>meses</option>
+              <option value="anos">anos</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="info-box"><div class="info-title">Selic efetiva (a.a.)</div><input type="number" id="selic" step="0.01" value="14.90" onchange="calcular()" /></div>
+        <div class="info-box"><div class="info-title">CDI (a.a.)</div><input type="number" id="cdi" step="0.01" value="14.90" onchange="calcular()" /></div>
+        <div class="info-box"><div class="info-title">IPCA (a.a.)</div><input type="number" id="ipca" step="0.0001" value="4.69" onchange="calcular()" /></div>
+        <div class="info-box"><div class="info-title">TR (a.m.)</div><input type="number" id="tr" step="0.0001" value="0.1739" onchange="calcular()" /></div>
+        <div class="info-box"><div class="info-title">Juro nominal do Tesouro Prefixado (a.a.)</div><input type="number" id="tesouroPrefixado" step="0.01" value="14.00" onchange="calcular()" /></div>
+        <div class="info-box"><div class="info-title">Taxa de custódia da B3 no Tesouro Direto (a.a.)</div><input type="number" id="taxaCustodia" step="0.01" value="0.20" onchange="calcular()" /></div>
+        <div class="info-box"><div class="info-title">Juro real do Tesouro IPCA+ (a.a.)</div><input type="number" id="tesouroIPCA" step="0.01" value="6.50" onchange="calcular()" /></div>
+        <div class="info-box"><div class="info-title">Taxa de administração do Fundo DI (a.a.)</div><input type="number" id="taxaAdmFundoDI" step="0.01" value="0.25" onchange="calcular()" /></div>
+        <div class="info-box"><div class="info-title">Rentabilidade do CDB (% do CDI)</div><input type="number" id="rentCDB" step="0.01" value="100" onchange="calcular()" /></div>
+        <div class="info-box"><div class="info-title">Rentabilidade do Fundo DI (% do CDI)</div><input type="number" id="rentFundoDI" step="0.01" value="98.17" onchange="calcular()" /></div>
+        <div class="info-box"><div class="info-title">Rentabilidade da LCI/LCA (% do CDI)</div><input type="number" id="rentLCI" step="0.01" value="85" onchange="calcular()" /></div>
+        <div class="info-box"><div class="info-title">Rentabilidade da Poupança (a.m.)</div><input type="number" id="rentPoupanca" step="0.0001" value="0.6748" onchange="calcular()" /></div>
+      </div>
+
+      <div class="result" id="resultado">Calculando...</div>
+
+      <div style="text-align: center; margin-top: 1.5rem;">
+        <button id="btnCalcular" style="padding: 10px 20px; background-color: #4a148c; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Calcular</button>
       </div>
     </div>
-  </div>
 
-  <div class="grid">
-    <div class="info-box">
-      <div class="info-title">Selic efetiva (a.a.)</div>
-      <input type="number" id="selic" step="0.01" value="14.90" onchange="calcular()" />
-    </div>
-    <div class="info-box">
-      <div class="info-title">CDI (a.a.)</div>
-      <input type="number" id="cdi" step="0.01" value="14.90" onchange="calcular()" />
-    </div>
-    <div class="info-box">
-      <div class="info-title">IPCA (a.a.)</div>
-      <input type="number" id="ipca" step="0.0001" value="4.69" onchange="calcular()" />
-    </div>
-    <div class="info-box">
-      <div class="info-title">TR (a.m.)</div>
-      <input type="number" id="tr" step="0.0001" value="0.1739" onchange="calcular()" />
-    </div>
-    <div class="info-box">
-      <div class="info-title">Juro nominal do Tesouro Prefixado (a.a.)</div>
-      <input type="number" id="tesouroPrefixado" step="0.01" value="14.00" onchange="calcular()" />
-    </div>
-    <div class="info-box">
-      <div class="info-title">Taxa de custódia da B3 no Tesouro Direto (a.a.)</div>
-      <input type="number" id="taxaCustodia" step="0.01" value="0.20" onchange="calcular()" />
-    </div>
-    <div class="info-box">
-      <div class="info-title">Juro real do Tesouro IPCA+ (a.a.)</div>
-      <input type="number" id="tesouroIPCA" step="0.01" value="6.50" onchange="calcular()" />
-    </div>
-    <div class="info-box">
-      <div class="info-title">Taxa de administração do Fundo DI (a.a.)</div>
-      <input type="number" id="taxaAdmFundoDI" step="0.01" value="0.25" onchange="calcular()" />
-    </div>
-    <div class="info-box">
-      <div class="info-title">Rentabilidade do CDB (% do CDI)</div>
-      <input type="number" id="rentCDB" step="0.01" value="100" onchange="calcular()" />
-    </div>
-    <div class="info-box">
-      <div class="info-title">Rentabilidade do Fundo DI (% do CDI)</div>
-      <input type="number" id="rentFundoDI" step="0.01" value="98.17" onchange="calcular()" />
-    </div>
-    <div class="info-box">
-      <div class="info-title">Rentabilidade da LCI/LCA (% do CDI)</div>
-      <input type="number" id="rentLCI" step="0.01" value="85" onchange="calcular()" />
-    </div>
-    <div class="info-box">
-      <div class="info-title">Rentabilidade da Poupança (a.m.)</div>
-      <input type="number" id="rentPoupanca" step="0.0001" value="0.6748" onchange="calcular()" />
+    <div class="grafico">
+      <canvas id="graficoInvestimentos" height="400"></canvas>
     </div>
   </div>
-
-  <div class="result" id="resultado">Calculando...</div>
-
-  <canvas id="graficoInvestimentos" height="400"></canvas>
-  <div style="text-align: center; margin-top: 1.5rem;">
-  <button id="btnCalcular" style="padding: 10px 20px; background-color: #4a148c; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
-    Calcular
-  </button>
-</div>
-  
 
   <footer>
     Criado por <strong>rvs</strong>
@@ -177,7 +162,6 @@
 </body>
 </html>
 <script>
-  // Funções para incrementar e decrementar o período
   function incrementPeriodo() {
     const periodoInput = document.getElementById('periodo');
     periodoInput.value = parseInt(periodoInput.value) + 1;
@@ -191,6 +175,5 @@
       calcular();
     }
   }
-
-  // Chama a função de cálculo inicial
   calcular();
+</script>
