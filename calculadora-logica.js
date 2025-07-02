@@ -1,5 +1,3 @@
-// calculadora-logica.js
-
 function calcularInvestimentos(params) {
   const {
     investimentoInicial,
@@ -29,14 +27,13 @@ function calcularInvestimentos(params) {
   };
   const labels = [];
 
-  let montanteBase = investimentoInicial;
   let montantes = {
-    CDB: montanteBase,
-    LCI: montanteBase,
-    Tesouro: montanteBase,
-    CDI: montanteBase,
-    IPCA: montanteBase,
-    Poupanca: montanteBase
+    CDB: investimentoInicial,
+    LCI: investimentoInicial,
+    Tesouro: investimentoInicial,
+    CDI: investimentoInicial,
+    IPCA: investimentoInicial,
+    Poupanca: investimentoInicial
   };
 
   for (let mes = 1; mes <= periodo; mes++) {
@@ -46,13 +43,12 @@ function calcularInvestimentos(params) {
     const selicMensal = Math.pow(1 + selic, 1 / 12) - 1;
     const ipcaMensal = Math.pow(1 + ipca, 1 / 12) - 1;
     const tesouroMensal = Math.pow(1 + tesouroNominal, 1 / 12) - 1;
-    const juroIPCAMensal = tesouroIPCA / 12;
 
     montantes.CDB = (montantes.CDB + aportesMensais) * (1 + cdiMensal * pctCDB);
     montantes.LCI = (montantes.LCI + aportesMensais) * (1 + cdiMensal * pctLCI);
     montantes.Tesouro = (montantes.Tesouro + aportesMensais) * (1 + tesouroMensal * (1 - taxaCustodia));
     montantes.CDI = (montantes.CDI + aportesMensais) * (1 + cdiMensal * pctFundo * (1 - taxaAdm));
-    montantes.IPCA = (montantes.IPCA + aportesMensais) * (1 + ipcaMensal + juroIPCAMensal);
+    montantes.IPCA = (montantes.IPCA + aportesMensais) * (1 + ipcaMensal + tesouroIPCA / 12);
     montantes.Poupanca = (montantes.Poupanca + aportesMensais) * (1 + rentPoupanca);
 
     resultados.CDB.push(montantes.CDB);
@@ -78,19 +74,19 @@ function atualizarGrafico(dados, labels) {
     data: {
       labels,
       datasets: [
-        document.getElementById('cbCDB').checked ? {
+        dados.CDB && document.getElementById('cbCDB')?.checked ? {
           label: 'CDB',
           data: dados.CDB,
           borderWidth: 2,
           fill: false
         } : null,
-        document.getElementById('cbLCI').checked ? {
+        dados.LCI && document.getElementById('cbLCI')?.checked ? {
           label: 'LCI/LCA',
           data: dados.LCI,
           borderWidth: 2,
           fill: false
         } : null,
-        document.getElementById('cbTesouro').checked ? {
+        dados.Tesouro && document.getElementById('cbTesouro')?.checked ? {
           label: 'Tesouro Prefixado',
           data: dados.Tesouro,
           borderWidth: 2,
@@ -185,6 +181,7 @@ document.getElementById("btnCalcular").addEventListener("click", async () => {
   const aporteMensal = parseFloat(document.getElementById("aportesMensais").value) || 0;
   const periodo = parseInt(document.getElementById("periodo").value) || 0;
   const unidade = document.getElementById("periodoUnidade").value;
+
   const meses = unidade === "anos" ? periodo * 12 : periodo;
 
   const cdi = parseFloat(document.getElementById("cdi").value) || 0;
@@ -195,10 +192,10 @@ document.getElementById("btnCalcular").addEventListener("click", async () => {
   const payload = {
     investimento_inicial: investimentoInicial,
     aporte_mensal: aporteMensal,
-    meses: meses,
-    cdi: cdi,
-    ipca: ipca,
-    poupanca: poupanca,
+    meses,
+    cdi,
+    ipca,
+    poupanca,
     juro_ipca: juroIPCA
   };
 
@@ -224,6 +221,7 @@ document.getElementById("btnCalcular").addEventListener("click", async () => {
       IPCA: Array.from({ length: meses }, (_, i) => data.total_ipca * (i + 1) / meses),
       Poupanca: Array.from({ length: meses }, (_, i) => data.total_poupanca * (i + 1) / meses)
     }, Array.from({ length: meses }, (_, i) => `${i + 1}º mês`));
+
   } catch (err) {
     console.error(err);
     alert("Erro ao calcular. Tente novamente.");
