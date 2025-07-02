@@ -191,14 +191,18 @@ document.getElementById("btnCalcular").addEventListener("click", async () => {
   const ipca = parseFloat(document.getElementById("ipca").value) || 0;
   const poupanca = parseFloat(document.getElementById("rentPoupanca").value) || 0;
 
+  const juroIPCA = parseFloat(document.getElementById("tesouroIPCA").value.replace(",", ".")) || 0;
+
   const payload = {
-    investimento_inicial: investimentoInicial,
-    aporte_mensal: aporteMensal,
-    meses: meses,
-    cdi: cdi,
-    ipca: ipca,
-    poupanca: poupanca
-  };
+        investimento_inicial: investimentoInicial,
+        aporte_mensal: aporteMensal,
+        meses: meses,
+        cdi: cdi,
+        ipca: ipca,
+        poupanca: poupanca,
+        juro_ipca: juroIPCA
+      };
+
 
   try {
     const res = await fetch("https://calculadora-rvs-production.up.railway.app/calcular", {
