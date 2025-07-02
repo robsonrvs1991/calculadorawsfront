@@ -200,30 +200,30 @@ document.getElementById("btnCalcular").addEventListener("click", async () => {
   };
 
   try {
-    const res = await fetch("https://calculadora-rvs-production.up.railway.app/calcular", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+  const res = await fetch("https://calculadora-rvs-production.up.railway.app/calcular", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 
-    if (!res.ok) throw new Error("Erro no cálculo");
+  if (!res.ok) throw new Error("Erro no cálculo");
 
-    const data = await res.json();
+  const data = await res.json();
 
-    document.getElementById("resultado").innerHTML = `
-      <div>📈 <strong>Total estimado CDI:</strong> R$ ${data.total_cdi.toFixed(2)}</div>
-      <div>📊 <strong>Total estimado IPCA:</strong> R$ ${data.total_ipca.toFixed(2)}</div>
-      <div>🏦 <strong>Total estimado Poupança:</strong> R$ ${data.total_poupanca.toFixed(2)}</div>
-    `;
+  document.getElementById("resultado").innerHTML = `
+    <div>📈 <strong>Total estimado CDI:</strong> R$ ${data.total_cdi.toFixed(2)}</div>
+    <div>📊 <strong>Total estimado IPCA:</strong> R$ ${data.total_ipca.toFixed(2)}</div>
+    <div>🏦 <strong>Total estimado Poupança:</strong> R$ ${data.total_poupanca.toFixed(2)}</div>
+  `;
 
-    atualizarGrafico({
-      CDI: Array.from({ length: meses }, (_, i) => data.total_cdi * (i + 1) / meses),
-      IPCA: Array.from({ length: meses }, (_, i) => data.total_ipca * (i + 1) / meses),
-      Poupanca: Array.from({ length: meses }, (_, i) => data.total_poupanca * (i + 1) / meses)
-    }, Array.from({ length: meses }, (_, i) => `${i + 1}º mês`));
+  atualizarGrafico({
+    CDI: Array.from({ length: meses }, (_, i) => data.total_cdi * (i + 1) / meses),
+    IPCA: Array.from({ length: meses }, (_, i) => data.total_ipca * (i + 1) / meses),
+    Poupanca: Array.from({ length: meses }, (_, i) => data.total_poupanca * (i + 1) / meses)
+  }, Array.from({ length: meses }, (_, i) => `${i + 1}º mês`));
 
-  } catch (err) {
-    console.error(err);
-    alert("Erro ao calcular. Tente novamente.");
-  }
-});
+} catch (err) {
+  console.error(err);
+  alert("Erro ao calcular. Tente novamente.");
+}
+
