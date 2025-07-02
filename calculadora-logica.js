@@ -46,12 +46,13 @@ function calcularInvestimentos(params) {
     const selicMensal = Math.pow(1 + selic, 1 / 12) - 1;
     const ipcaMensal = Math.pow(1 + ipca, 1 / 12) - 1;
     const tesouroMensal = Math.pow(1 + tesouroNominal, 1 / 12) - 1;
+    const juroIPCAMensal = tesouroIPCA / 12;
 
     montantes.CDB = (montantes.CDB + aportesMensais) * (1 + cdiMensal * pctCDB);
     montantes.LCI = (montantes.LCI + aportesMensais) * (1 + cdiMensal * pctLCI);
     montantes.Tesouro = (montantes.Tesouro + aportesMensais) * (1 + tesouroMensal * (1 - taxaCustodia));
     montantes.CDI = (montantes.CDI + aportesMensais) * (1 + cdiMensal * pctFundo * (1 - taxaAdm));
-    montantes.IPCA = (montantes.IPCA + aportesMensais) * (1 + ipcaMensal + tesouroIPCA / 12);
+    montantes.IPCA = (montantes.IPCA + aportesMensais) * (1 + ipcaMensal + juroIPCAMensal);
     montantes.Poupanca = (montantes.Poupanca + aportesMensais) * (1 + rentPoupanca);
 
     resultados.CDB.push(montantes.CDB);
@@ -77,19 +78,19 @@ function atualizarGrafico(dados, labels) {
     data: {
       labels,
       datasets: [
-        dados.CDB && document.getElementById('cbCDB').checked ? {
+        document.getElementById('cbCDB').checked ? {
           label: 'CDB',
           data: dados.CDB,
           borderWidth: 2,
           fill: false
         } : null,
-        dados.LCI && document.getElementById('cbLCI').checked ? {
+        document.getElementById('cbLCI').checked ? {
           label: 'LCI/LCA',
           data: dados.LCI,
           borderWidth: 2,
           fill: false
         } : null,
-        dados.Tesouro && document.getElementById('cbTesouro').checked ? {
+        document.getElementById('cbTesouro').checked ? {
           label: 'Tesouro Prefixado',
           data: dados.Tesouro,
           borderWidth: 2,
@@ -160,7 +161,7 @@ function exportarPDF() {
 function exportarXLSX() {
   const wb = XLSX.utils.book_new();
   const labels = chartInstance.data.labels;
-  const output = [ ['Mês'] ];
+  const output = [['Mês']];
 
   chartInstance.data.datasets.forEach(dataset => {
     output[0].push(dataset.label);
@@ -184,25 +185,22 @@ document.getElementById("btnCalcular").addEventListener("click", async () => {
   const aporteMensal = parseFloat(document.getElementById("aportesMensais").value) || 0;
   const periodo = parseInt(document.getElementById("periodo").value) || 0;
   const unidade = document.getElementById("periodoUnidade").value;
-
   const meses = unidade === "anos" ? periodo * 12 : periodo;
 
   const cdi = parseFloat(document.getElementById("cdi").value) || 0;
   const ipca = parseFloat(document.getElementById("ipca").value) || 0;
   const poupanca = parseFloat(document.getElementById("rentPoupanca").value) || 0;
-
   const juroIPCA = parseFloat(document.getElementById("tesouroIPCA").value.replace(",", ".")) || 0;
 
   const payload = {
-        investimento_inicial: investimentoInicial,
-        aporte_mensal: aporteMensal,
-        meses: meses,
-        cdi: cdi,
-        ipca: ipca,
-        poupanca: poupanca,
-        juro_ipca: juroIPCA
-      };
-
+    investimento_inicial: investimentoInicial,
+    aporte_mensal: aporteMensal,
+    meses: meses,
+    cdi: cdi,
+    ipca: ipca,
+    poupanca: poupanca,
+    juro_ipca: juroIPCA
+  };
 
   try {
     const res = await fetch("https://calculadora-rvs-production.up.railway.app/calcular", {
@@ -221,16 +219,13 @@ document.getElementById("btnCalcular").addEventListener("click", async () => {
       <div>🏦 <strong>Total estimado Poupança:</strong> R$ ${data.total_poupanca.toFixed(2)}</div>
     `;
 
-    // Atualização futura do gráfico pode ser adicionada aqui
+    atualizarGrafico({
+      CDI: Array.from({ length: meses }, (_, i) => data.total_cdi * (i + 1) / meses),
+      IPCA: Array.from({ length: meses }, (_, i) => data.total_ipca * (i + 1) / meses),
+      Poupanca: Array.from({ length: meses }, (_, i) => data.total_poupanca * (i + 1) / meses)
+    }, Array.from({ length: meses }, (_, i) => `${i + 1}º mês`));
   } catch (err) {
     console.error(err);
     alert("Erro ao calcular. Tente novamente.");
   }
 });
-
-atualizarGrafico({
-  CDI: Array.from({ length: meses }, (_, i) => data.total_cdi * (i + 1) / meses),
-  IPCA: Array.from({ length: meses }, (_, i) => data.total_ipca * (i + 1) / meses),
-  Poupanca: Array.from({ length: meses }, (_, i) => data.total_poupanca * (i + 1) / meses)
-}, Array.from({ length: meses }, (_, i) => `${i + 1}º mês`));
-
